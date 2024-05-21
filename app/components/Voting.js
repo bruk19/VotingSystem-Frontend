@@ -1,6 +1,6 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { getWeb3 } from "../web3";
-import {abi, contractAddress} from "../constants/voting";
+import { abi, contractAddress } from "../constants/voting";
 
 function voting() {
 
