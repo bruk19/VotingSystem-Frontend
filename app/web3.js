@@ -19,3 +19,7 @@ async function setupWeb3() {
 }
 
 setupWeb3();
+
+export function getWeb3() {
+  return web3;
+}
