@@ -1,4 +1,4 @@
-import Vot from "./components/vot";
+import Vot from "./components/Vot";
 
 export default function Home() {
   return (
