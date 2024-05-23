@@ -88,6 +88,20 @@ function Vot() {
   }
 };
 
+const getVoterAddress = async () => {
+  if (contract) {
+    try {
+      const allVoters = await contract.getVoterAddress();
+      console.log("Retrieved votes:", allVoters);
+      setVoterAddress(allVoters);
+    } catch (error) {
+      console.error("Error retrieving voters Address: ", error);
+    }
+  } else {
+    console.error("Contract is not initialized. 1");
+  }
+};
+
   return (
     <div>
       <h1>Voting System</h1>
@@ -131,6 +145,13 @@ function Vot() {
         <h4>List of votes</h4>
         <ul>
          {voteLists.map((vote, index) => (
+         <li key={index}>
+          <span>{vote}</span>
+        </li>
+         ))}
+       </ul>
+       <ul>
+         {voterAddress.map((vote, index) => (
          <li key={index}>
           <span>{vote}</span>
         </li>
