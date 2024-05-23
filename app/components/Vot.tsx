@@ -19,13 +19,13 @@ function Vot() {
   const [timeDuration, setTimeDuration] = useState<number>(0);
   const [nameVoted, setNameVoted] = useState<string>("");
   const [nameVotes, setNameVotes] = useState<string>("");
+  const [voteLists, setVoteLists] = useState<string[]>([]);
 
   useEffect(() => {
     async function initialize() {
       await setupWeb3();
       const web3Instance = getWeb3();
       console.log(web3Instance)
-      if (web3Instance && typeof window !== "undefined" && window.ethereum) {
 
         const signer = await web3Instance.getSigner(); 
         console.log(signer)
@@ -37,7 +37,7 @@ function Vot() {
         //   const contractInstance = new ethers.Contract(contractAddress, abi, resolvedSigner);
         //   setContract(contractInstance);
         // })
-      }
+      getVoteNames();
     }
     initialize();
   }, []);
@@ -73,6 +73,13 @@ function Vot() {
       } catch (error) {
         console.error("Error Voting:", error);
       }
+    }
+  }
+
+  const getVoteNames = async () => {
+    if (contract) {
+      const allVotes = await contract.getVoteNames();
+      setVoteLists(allVotes);
     }
   }
 
