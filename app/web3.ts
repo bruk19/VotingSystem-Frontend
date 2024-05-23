@@ -1,25 +1,33 @@
 import { ethers } from "ethers";
 
-declare var window: any;
+declare global {
+  interface Window {
+    ethereum?: ethers.providers.ExternalProvider;
+  }
+}
 
 let web3: ethers.providers.Web3Provider | undefined;
-let provider: providers.JsonRpcProvider | undefined;
 
 async function setupWeb3(): Promise<void> {
-  if (window.ethereum) {
+  if (typeof window !== "undefined" && window.ethereum) {
     web3 = new ethers.BrowserProvider(window.ethereum);
-    const networkId = (await web3.getSigner()).chainId;
+    const signer = web3.getSigner();
+    const network = await web3.getNetwork();
+    const networkId = network.chainId;
+    
     if (networkId !== 11155111) {
       window.alert("Please switch to Sepolia Testnet");
     }
 
     await window.ethereum.request({ method: "eth_requestAccounts" });
   } else {
-    alert("MetaMask not detected! Please install MetaMask.");
+    console.error("MetaMask not detected! Please install MetaMask.");
   }
 }
 
-setupWeb3();
+if (typeof window !== "undefined") {
+  setupWeb3();
+}
 
 export function getWeb3(): ethers.providers.Web3Provider | undefined {
   return web3;

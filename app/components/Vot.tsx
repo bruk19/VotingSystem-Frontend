@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { getWeb3 } from "../web3";
 import { ethers } from "ethers";
@@ -16,8 +15,8 @@ function Vot() {
   const [votedName, setVotedName] = useState<string>("");
   const [web3, setWeb3] = useState<ethers.providers.Web3Provider | undefined>(undefined);
   const [contract, setContract] = useState<ethers.Contract | undefined>(undefined);
-  const [voteList, setVoteList] = useState<string>("");
-  const [timeDuration, setTimeDuration] = useState<string>("");
+  const [voteList, setVoteList] = useState<string[]>([]);
+  const [timeDuration, setTimeDuration] = useState<number>(0);
 
   useEffect(() => {
     async function initialize() {
@@ -46,8 +45,8 @@ function Vot() {
         window.alert("Voting System is created successfully.");
 
         setNameVote("");
-        setVoteList("");
-        setTimeDuration("");
+        setVoteList([]);
+        setTimeDuration(0);
       } catch (error) {
         console.error("Error creating voting system", error);
       }
@@ -77,16 +76,16 @@ function Vot() {
         onChange={(e) => setNameVote(e.target.value)}
         />
         <input
-        type="text"
-        placeholder="Voted Name list"
-        value={voteList}
-        onChange={(e) => setVoteList(e.target.value)}
+          type="text"
+          placeholder="Voted Name list"
+          value={voteList.join(', ')}
+          onChange={(e) => setVoteList(e.target.value.split(', '))}
         />
-        <input 
-        type="text"
-        placeholder="Duration days"
-        value={timeDuration}
-        onChange={(e) => setTimeDuration(e.target.value)}
+        <input
+          type="number"
+          placeholder="Duration days"
+          value={timeDuration}
+          onChange={(e) => setTimeDuration(Number(e.target.value))}
         />
         <button onClick={createVoteSystem}>Create Voting System</button>
       </div>
