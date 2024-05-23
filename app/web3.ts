@@ -7,26 +7,24 @@ declare global {
 }
 
 let web3: ethers.providers.Web3Provider | undefined;
+let provider: ethers.providers.Web3Provider | undefined;
 
-async function setupWeb3(): Promise<void> {
-  if (typeof window !== "undefined" && window.ethereum) {
-    web3 = new ethers.BrowserProvider(window.ethereum);
-    const signer = web3.getSigner();
-    const network = await web3.getNetwork();
-    const networkId = network.chainId;
-    
-    if (networkId !== 11155111) {
-      window.alert("Please switch to Sepolia Testnet");
-    }
+ export async function setupWeb3(): Promise<void> {
+  let signer = null;
 
-    await window.ethereum.request({ method: "eth_requestAccounts" });
+  if (window.ethereum == null) {
+ console.log("MetaMask not installed; using read-only defaults")
+    provider = ethers.getDefaultProvider()
   } else {
-    console.error("MetaMask not detected! Please install MetaMask.");
-  }
-}
+     web3 = new ethers.BrowserProvider(window.ethereum)
+    signer = await web3.getSigner();
 
-if (typeof window !== "undefined") {
-  setupWeb3();
+    const networkId = (await web3.getNetwork()).chainId;
+    if (networkId != 11155111) {
+       window.alert("Please switch to Polygon Sepolia Testnet");
+     }
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+  }
 }
 
 export function getWeb3(): ethers.providers.Web3Provider | undefined {

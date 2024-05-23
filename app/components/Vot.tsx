@@ -18,6 +18,7 @@ function Vot() {
   const [voteList, setVoteList] = useState<string[]>([]);
   const [timeDuration, setTimeDuration] = useState<number>(0);
   const [nameVoted, setNameVoted] = useState<string>("");
+  const [nameVotes, setNameVotes] = useState<string>("");
 
   useEffect(() => {
     async function initialize() {
@@ -34,6 +35,7 @@ function Vot() {
           console.error("Error getting signer:", error);
         });
       }
+      listOfVotes();
     }
     initialize();
   }, []);
@@ -53,6 +55,13 @@ function Vot() {
       }
     }
   };
+
+  const listOfVotes = async () => {
+    if(contract) {
+      const allVotes = await contract.nameVote();
+      setNameVote(allVotes)
+    }
+  }
 
   const voting = async () => {
     if (web3 && contract) {
@@ -94,8 +103,8 @@ function Vot() {
         <input 
         type="text"
         placeholder="Enter Vote Name"
-        value={nameVote}
-        onChange={(e) => setNameVote(e.target.value)}
+        value={nameVotes}
+        onChange={(e) => setNameVotes(e.target.value)}
         />
         <input 
         type="text"
