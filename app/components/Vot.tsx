@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getWeb3 } from "../web3";
+import { getWeb3, setupWeb3 } from "../web3";
 import { ethers } from "ethers";
 import { abi, contractAddress } from "../constants/voting";
 
@@ -22,18 +22,21 @@ function Vot() {
 
   useEffect(() => {
     async function initialize() {
+      await setupWeb3();
       const web3Instance = getWeb3();
+      console.log(web3Instance)
       if (web3Instance && typeof window !== "undefined" && window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        setWeb3(web3Instance);
 
-        const signer = provider.getSigner();
-        signer.then((resolvedSigner: ethers.providers.JsonRpcSigner) => {
-          const contractInstance = new ethers.Contract(contractAddress, abi, resolvedSigner);
-          setContract(contractInstance);
-        }).catch((error) => {
-          console.error("Error getting signer:", error);
-        });
+        const signer = await web3Instance.getSigner(); 
+        console.log(signer)
+
+        const contractInstance = new ethers.Contract(contractAddress, abi, signer);
+        setContract(contractInstance);
+
+        // signer.then((resolvedSigner: ethers.providers.JsonRpcSigner) => {
+        //   const contractInstance = new ethers.Contract(contractAddress, abi, resolvedSigner);
+        //   setContract(contractInstance);
+        // })
       }
       listOfVotes();
     }
