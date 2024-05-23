@@ -17,6 +17,7 @@ function Vot() {
   const [contract, setContract] = useState<ethers.Contract | undefined>(undefined);
   const [voteList, setVoteList] = useState<string[]>([]);
   const [timeDuration, setTimeDuration] = useState<number>(0);
+  const [nameVoted, setNameVoted] = useState<string>("");
 
   useEffect(() => {
     async function initialize() {
@@ -88,6 +89,21 @@ function Vot() {
           onChange={(e) => setTimeDuration(Number(e.target.value))}
         />
         <button onClick={createVoteSystem}>Create Voting System</button>
+      </div>
+      <div>
+        <input 
+        type="text"
+        placeholder="Enter Vote Name"
+        value={nameVote}
+        onChange={(e) => setNameVote(e.target.value)}
+        />
+        <input 
+        type="text"
+        placeholder="Voted Name"
+        value={nameVoted}
+        onChange={(e) => setNameVoted(e.target.value)}
+        />
+
       </div>
     </div>
   )
