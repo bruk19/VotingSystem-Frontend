@@ -103,7 +103,7 @@ function Vot() {
         value={nameVoted}
         onChange={(e) => setNameVoted(e.target.value)}
         />
-
+        <button onClick={voting}>Vote</button>
       </div>
     </div>
   )
