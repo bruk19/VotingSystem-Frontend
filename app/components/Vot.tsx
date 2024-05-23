@@ -43,21 +43,23 @@ function Vot() {
     initialize();
   }, []);
 
-  const createVoteSystem = async () => {
-    if (web3 && contract) {
-      try {
-        const tx = await contract.createVoteSystem(nameVote, voteList, timeDuration);
-        await tx.wait();
-        window.alert("Voting System is created successfully.");
+ const createVoteSystem = async () => {
+  if (contract && window.ethereum !== undefined) {
+    try {
+      const tx = await contract.createVoteSystem(nameVote, voteList, timeDuration);
+      await tx.wait();
+      window.alert("Voting System is created successfully.");
 
-        setNameVote("");
-        setVoteList([]);
-        setTimeDuration(0);
-      } catch (error) {
-        console.error("Error creating voting system", error);
-      }
+      setNameVote("");
+      setVoteList([]);
+      setTimeDuration(0);
+    } catch (error) {
+      console.error("Error creating voting system", error);
     }
-  };
+  } else {
+    console.error("Contract is not initialized or MetaMask is not detected.");
+  }
+};
 
   const listOfVotes = async () => {
     if(contract) {
