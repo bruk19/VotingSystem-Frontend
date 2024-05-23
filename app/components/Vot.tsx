@@ -38,7 +38,6 @@ function Vot() {
         //   setContract(contractInstance);
         // })
       }
-      listOfVotes();
     }
     initialize();
   }, []);
@@ -61,19 +60,15 @@ function Vot() {
   }
 };
 
-  const listOfVotes = async () => {
-    if(contract) {
-      const allVotes = await contract.nameVote();
-      setNameVote(allVotes)
-    }
-  }
-
   const voting = async () => {
-    if (web3 && contract) {
+    if (window.ethereum !== undefined && contract) {
       try {
         const tx = await contract.voting(nameVote, votedName);
         await tx.wait();
         window.alert("Voting created successfully.");
+
+        setNameVotes("");
+        setNameVotes("");
 
       } catch (error) {
         console.error("Error Voting:", error);
