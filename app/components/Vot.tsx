@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getWeb3 } from "../web3";
+import { getWeb3, setupWeb3 } from "../web3";
 import { ethers } from "ethers";
 import { abi, contractAddress } from "../constants/voting";
+import { Address } from "web3";
 
 declare global {
   interface Window {
@@ -14,84 +15,162 @@ declare global {
 function Vot() {
   const [nameVote, setNameVote] = useState<string>("");
   const [votedName, setVotedName] = useState<string>("");
-  const [web3, setWeb3] = useState<ethers.providers.Web3Provider | undefined>(undefined);
   const [contract, setContract] = useState<ethers.Contract | undefined>(undefined);
-  const [voteList, setVoteList] = useState<string>("");
-  const [timeDuration, setTimeDuration] = useState<string>("");
+  const [voteList, setVoteList] = useState<string[]>([]);
+  const [timeDuration, setTimeDuration] = useState<number>(0);
+  const [nameVotes, setNameVotes] = useState<string>("");
+  const [voteLists, setVoteLists] = useState<string[]>([]);
+  const [voterAddress, setVoterAddress] = useState<string[]>([]);
 
   useEffect(() => {
     async function initialize() {
+      await setupWeb3();
       const web3Instance = getWeb3();
-      if (web3Instance && typeof window !== "undefined" && window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        setWeb3(web3Instance);
+      console.log(web3Instance);
 
-        const signer = provider.getSigner();
-        signer.then((resolvedSigner: ethers.providers.JsonRpcSigner) => {
-          const contractInstance = new ethers.Contract(contractAddress, abi, resolvedSigner);
-          setContract(contractInstance);
-        }).catch((error) => {
-          console.error("Error getting signer:", error);
-        });
-      }
+      const signer = await web3Instance.getSigner();
+      console.log(signer);
+
+      const contractInstance = new ethers.Contract(contractAddress, abi, signer);
+      setContract(contractInstance);
+
+      await getVoteNames();
+      await  getVoterAddress();
     }
     initialize();
   }, []);
 
   const createVoteSystem = async () => {
-    if (web3 && contract) {
+    if (contract && window.ethereum !== undefined) {
       try {
         const tx = await contract.createVoteSystem(nameVote, voteList, timeDuration);
-        await tx.wait();
+        const receipt = await tx.wait();
+        console.log("Voting system created successfully. Transaction receipt:", receipt);
         window.alert("Voting System is created successfully.");
 
         setNameVote("");
-        setVoteList("");
-        setTimeDuration("");
+        setVoteList([]);
+        setTimeDuration(0);
       } catch (error) {
         console.error("Error creating voting system", error);
       }
+    } else {
+      console.error("Contract is not initialized or MetaMask is not detected.");
     }
   };
 
-  const voting = async () => {
-    if (web3 && contract) {
-      try {
-        const tx = await contract.voting(nameVote, votedName);
+ const voting = async () => {
+  if (contract && window.ethereum !== undefined) {
+    try {
+      console.log("Voting for:", nameVotes, votedName);
+
+      const allVotes = await contract.getVoteNames();
+      console.log("Retrieved votes:", allVotes);
+
+      const votedList = await contract.getVotedList(nameVotes);
+      console.log("Retrieved voted list:", votedList);
+
+      const trimmedVotedName = votedName.trim().toLowerCase();
+      const isVotedNameInList = votedList.map(name => name.toLowerCase()).includes(trimmedVotedName);
+
+      if (isVotedNameInList) {
+        const tx = await contract.voting(nameVotes, votedName);
         await tx.wait();
         window.alert("Voting created successfully.");
-
-      } catch (error) {
-        console.error("Error Voting:", error);
+        setNameVotes("");
+        setVotedName("");
+      } else {
+        console.error("Voted name not found in the list:", votedName);
       }
+    } catch (error) {
+      console.error("Error Voting:", error);
     }
   }
+};
+
+   const getVoteNames = async () => {
+  if (contract) {
+      const allVotes = await contract.getVoteNames();
+      console.log("Retrieved votes:", allVotes);
+      setVoteLists(allVotes);
+  } 
+};
+
+const getVoterAddress = async () => {
+  if (contract) {
+    try {
+      const allVoters = await contract.getVoterAddress();
+      console.log("Retrieved votes:", allVoters);
+      setVoterAddress(allVoters);
+    } catch (error) {
+      console.error("Error retrieving voters Address: ", error);
+    }
+  } else {
+    console.error("Contract is not initialized. 1");
+  }
+};
 
   return (
     <div>
       <h1>Voting System</h1>
       <div>
-        <input type="text"
-        placeholder="Enter Vote Name"
-        value={nameVote}
-        onChange={(e) => setNameVote(e.target.value)}
-        />
         <input
-        type="text"
-        placeholder="Voted Name list"
-        value={voteList}
-        onChange={(e) => setVoteList(e.target.value)}
+          type="text"
+          placeholder="Enter Vote Name"
+          value={nameVote}
+          onChange={(e) => setNameVote(e.target.value)}
         />
-        <input 
-        type="text"
-        placeholder="Duration days"
-        value={timeDuration}
-        onChange={(e) => setTimeDuration(e.target.value)}
+      <input
+  type="text"
+  placeholder="Voted Name list"
+  value={voteList.join(', ')}
+  onChange={(e) => {
+    const names = e.target.value.split(', ').filter((name) => name.trim() !== '');
+    setVoteList(names);
+  }}
+/>
+        <input
+          type="number"
+          placeholder="Duration days"
+          value={timeDuration}
+          onChange={(e) => setTimeDuration(Number(e.target.value))}
         />
         <button onClick={createVoteSystem}>Create Voting System</button>
       </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Enter Vote Name"
+          value={nameVotes}
+          onChange={(e) => setNameVotes(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Voted Name"
+          value={votedName}
+          onChange={(e) => setVotedName(e.target.value)}
+        />
+        <button onClick={voting}>Vote</button>
+      </div>
+      <div>
+        <h4>List of votes</h4>
+        <ul>
+         {voteLists.map((vote, index) => (
+         <li key={index}>
+          <span>{vote}</span>
+        </li>
+         ))}
+       </ul>
+       <ul>
+         {voterAddress.map((vote, index) => (
+         <li key={index}>
+          <span>{vote}</span>
+        </li>
+         ))}
+       </ul>
+      </div>
     </div>
-  )
+  );
 }
 
 export default Vot;

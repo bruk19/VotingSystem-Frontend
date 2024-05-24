@@ -1,4 +1,4 @@
-export const contractAddress = "0x3Cc5Ee2A44Fd6D06fe739A071818F67cCF9bD761";
+export const contractAddress = "0xf271F07C011db896c71A6e03bB15BA21c37b39d4";
 export const abi = [
     {
       "inputs": [],
@@ -129,6 +129,25 @@ export const abi = [
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_voteName",
+          "type": "string"
+        }
+      ],
+      "name": "getVotedList",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
         }
       ],
       "stateMutability": "view",
