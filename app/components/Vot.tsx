@@ -21,6 +21,7 @@ function Vot() {
   const [nameVotes, setNameVotes] = useState<string>("");
   const [voteLists, setVoteLists] = useState<string[]>([]);
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
+  const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
 
   useEffect(() => {
     async function initialize() {
@@ -34,11 +35,46 @@ function Vot() {
       const contractInstance = new ethers.Contract(contractAddress, abi, signer);
       setContract(contractInstance);
 
-      await getVoteNames();
-      await  getVoterAddress();
     }
     initialize();
   }, []);
+
+  useEffect(() => {
+  const getVoteNames = async () => {
+    if (contract) {
+      try {
+        const allVotes = await contract.getVoteNames();
+        setVoteLists(allVotes);
+      } catch (error) {
+        console.error("Error retrieving vote names:", error);
+      }
+    } else {
+      console.error("Contract is not initialized.");
+    }
+  };
+
+  getVoteNames();
+  console.log("voteLists:", voteLists);
+}, [contract, setVoteLists]);
+
+useEffect(() => {
+  const getVoterAddress = async () => {
+  if (contract) {
+    try {
+      const allVoters = await contract.getVoterAddress();
+      console.log("Retrieved votes:", allVoters);
+      setVoterAddress(allVoters);
+    } catch (error) {
+      console.error("Error retrieving voters Address: ", error);
+    }
+  } else {
+    console.error("Contract is not initialized. 1");
+  }
+};
+
+getVoterAddress();
+console.log("voterAddress", voterAddress);
+}, [contract, setVoterAddress])
 
   const createVoteSystem = async () => {
     if (contract && window.ethereum !== undefined) {
@@ -70,45 +106,37 @@ function Vot() {
       const votedList = await contract.getVotedList(nameVotes);
       console.log("Retrieved voted list:", votedList);
 
-      const trimmedVotedName = votedName.trim().toLowerCase();
-      const isVotedNameInList = votedList.map(name => name.toLowerCase()).includes(trimmedVotedName);
+      const tx = await contract.voting(nameVotes, votedName);
+      const receipt = await tx.wait();
+      console.log("Voted successfully. Transaction receipt:", receipt);
 
-      if (isVotedNameInList) {
-        const tx = await contract.voting(nameVotes, votedName);
-        await tx.wait();
-        window.alert("Voting created successfully.");
+        window.alert("Votedsuccessfully.");
         setNameVotes("");
         setVotedName("");
-      } else {
-        console.error("Voted name not found in the list:", votedName);
-      }
+  
     } catch (error) {
       console.error("Error Voting:", error);
     }
   }
 };
 
-   const getVoteNames = async () => {
-  if (contract) {
-      const allVotes = await contract.getVoteNames();
-      console.log("Retrieved votes:", allVotes);
-      setVoteLists(allVotes);
-  } 
-};
 
-const getVoterAddress = async () => {
-  if (contract) {
-    try {
-      const allVoters = await contract.getVoterAddress();
-      console.log("Retrieved votes:", allVoters);
-      setVoterAddress(allVoters);
-    } catch (error) {
-      console.error("Error retrieving voters Address: ", error);
+const getVoterAddress = async (voteName: string) => {
+    if (contract) {
+      try {
+        const voterAddress = await contract.getVoterAddress(voteName);
+        console.log("Retrieved voter address:", voterAddress);
+        setSelectedVoteName(voteName);
+        // Display the voter address in the UI
+        alert(`Voter address for "${voteName}": ${voterAddress}`);
+      } catch (error) {
+        console.error("Error retrieving voter address:", error);
+      }
+    } else {
+      console.error("Contract is not initialized.");
     }
-  } else {
-    console.error("Contract is not initialized. 1");
-  }
-};
+  };
+
 
   return (
     <div>
@@ -121,14 +149,14 @@ const getVoterAddress = async () => {
           onChange={(e) => setNameVote(e.target.value)}
         />
       <input
-  type="text"
-  placeholder="Voted Name list"
-  value={voteList.join(', ')}
-  onChange={(e) => {
-    const names = e.target.value.split(', ').filter((name) => name.trim() !== '');
-    setVoteList(names);
-  }}
-/>
+          type="text"
+          placeholder="Voted Name list"
+          value={voteList.join(', ')}
+          onChange={(e) => {
+          const names = e.target.value.split(', ').filter((name) => name.trim());
+          setVoteList(names);
+          }}
+        />
         <input
           type="number"
           placeholder="Duration days"
@@ -155,19 +183,18 @@ const getVoterAddress = async () => {
       <div>
         <h4>List of votes</h4>
         <ul>
-         {voteLists.map((vote, index) => (
-         <li key={index}>
-          <span>{vote}</span>
-        </li>
-         ))}
-       </ul>
-       <ul>
-         {voterAddress.map((vote, index) => (
-         <li key={index}>
-          <span>{vote}</span>
-        </li>
-         ))}
-       </ul>
+          {voteLists.map((vote, index) => (
+            <li key={index} onClick={() => getVoterAddress(vote)}>
+              <span>{vote}</span>
+            </li>
+          ))}
+        </ul>
+        {selectedVoteName && (
+          <div>
+            <h4>Voter Address for "{selectedVoteName}":</h4>
+            <p>{voterAddress[voteLists.indexOf(selectedVoteName)]}</p>
+          </div>
+        )}
       </div>
     </div>
   );
