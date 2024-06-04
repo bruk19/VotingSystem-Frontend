@@ -22,6 +22,7 @@ function Vot() {
   const [voteLists, setVoteLists] = useState<string[]>([]);
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
   const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
+  const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string | null>(null);
 
   useEffect(() => {
     async function initialize() {
@@ -122,20 +123,19 @@ console.log("voterAddress", voterAddress);
 
 
 const getVoterAddress = async (voteName: string) => {
-    if (contract) {
-      try {
-        const voterAddress = await contract.getVoterAddress(voteName);
-        console.log("Retrieved voter address:", voterAddress);
-        setSelectedVoteName(voteName);
-        // Display the voter address in the UI
-        alert(`Voter address for "${voteName}": ${voterAddress}`);
-      } catch (error) {
-        console.error("Error retrieving voter address:", error);
-      }
-    } else {
-      console.error("Contract is not initialized.");
+  if (contract) {
+    try {
+      const voterAddress = await contract.getVoterAddress(voteName);
+      console.log("Retrieved voter address:", voterAddress);
+      setSelectedVoteName(voteName);
+      setDisplayedVoterAddress(voterAddress);
+    } catch (error) {
+      console.error("Error retrieving voter address:", error);
     }
-  };
+  } else {
+    console.error("Contract is not initialized.");
+  }
+};
 
 
   return (
@@ -189,13 +189,12 @@ const getVoterAddress = async (voteName: string) => {
             </li>
           ))}
         </ul>
-        {selectedVoteName && (
-          <div>
-            <h4>Voter Address for "{selectedVoteName}":</h4>
-            <p>{voterAddress[voteLists.indexOf(selectedVoteName)]}</p>
-          </div>
-        )}
       </div>
+       <div>
+      {selectedVoteName && displayedVoterAddress && (
+        <p>Voter address for "{selectedVoteName}": {displayedVoterAddress}</p>
+      )}
+    </div>
     </div>
   );
 }
