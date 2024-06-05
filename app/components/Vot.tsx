@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { abi, contractAddress } from "../constants/voting";
 import { Address } from "web3";
 
+
 declare global {
   interface Window {
     ethereum?: ethers.providers.ExternalProvider;
@@ -24,6 +25,9 @@ function Vot() {
   const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
   const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [votingList, setVotingList] = useState<string | null>(null);
+  const [displayVotedList, setDisplayVotedList] = useState<string[]>([]);
+  const [votedList, setVotedList] = useState<string[]>([]);
 
   useEffect(() => {
     async function initialize() {
@@ -169,6 +173,20 @@ function Vot() {
     }
   };
 
+  const getVotedList = async (voteList: string[]) => {
+  if (contract) {
+    try {
+      const list = await contract.getVotingList(voteList);
+      console.log("Retrieved votes:", list);
+      setVotedList(list);
+    } catch (error) {
+      console.error("Error retrieving voting list", error);
+    }
+  } else {
+    console.error("Contract List is not initialized");
+  }
+};
+
   return (
   <div className="container mx-auto my-5">
      {walletAddress ? (
@@ -246,6 +264,18 @@ function Vot() {
               </li>
             ))}
           </ul>
+           {votedList.length > 0 && (
+  <div className="bg-white shadow-md rounded-lg p-4 mt-4">
+    <h4 className="text-lg font-bold mb-2">Voted List</h4>
+    <ul className="space-y-2">
+      {votedList.map((vote, index) => (
+        <li key={index} className="bg-gray-100 rounded-md p-2">
+          {vote}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
         </div>
         <div className="bg-white shadow-md rounded-lg p-4">
           <div>
