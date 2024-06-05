@@ -23,6 +23,7 @@ function Vot() {
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
   const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
   const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   useEffect(() => {
     async function initialize() {
@@ -35,6 +36,9 @@ function Vot() {
 
       const contractInstance = new ethers.Contract(contractAddress, abi, signer);
       setContract(contractInstance);
+
+      const wallet = await signer.getAddress();
+      setWalletAddress(wallet);
     }
     initialize();
   }, []);
@@ -86,13 +90,27 @@ function Vot() {
           console.error("Error retrieving voting timeDuration", error);
         }
       } else {
-        console.error("Contract is not initialized.");
+        console.error("Contract is not initialized time.");
       }
     };
 
     getVotingTime();
   }, [contract]);
 
+ const connectWallet = async () => {
+  if (window.ethereum) {
+    try {
+      await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  } else {
+    console.error("MetaMask is not detected.");
+  }
+};
+  
   const createVoteSystem = async () => {
     if (contract && window.ethereum !== undefined) {
       try {
@@ -152,8 +170,20 @@ function Vot() {
   };
 
   return (
-    <div>
-      <h1>Voting System</h1>
+  <div className="container mx-auto my-5">
+     {walletAddress ? (
+        <p className="text-lg font-bold mb-4">
+          Account: {walletAddress.slice(0, 4)}...{walletAddress.slice(walletAddress.length - 4)}
+        </p>
+      ) : (
+        <button
+          onClick={connectWallet}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Connect Wallet
+        </button>
+      )}
+      <h1 className="text-3xl mx-4 font-bold mb-4">Voting System</h1>
       <div>
         <input
           type="text"
@@ -161,24 +191,24 @@ function Vot() {
           value={nameVote}
           onChange={(e) => setNameVote(e.target.value)}
         />
-    <input
-  type="text"
-  placeholder="Voted Name list"
-  value={voteList.join(', ')}
-  onKeyDown={(e) => {
-    if (e.key === 'Enter') {
-      const newName = e.target.value.trim();
-      if (newName !== '') {
-        setVoteList([...voteList, newName]);
-        e.target.value = '';
-      }
-    }
-  }}
-  onChange={(e) => {
-    const names = e.target.value.split(',').map((name) => name.trim());
-    setVoteList(names);
-  }}
-/>
+        <input
+          type="text"
+          placeholder="Voted Name list"
+          value={voteList.join(', ')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              const newName = e.target.value.trim();
+              if (newName !== '') {
+                setVoteList([...voteList, newName]);
+                e.target.value = '';
+              }
+            }
+          }}
+          onChange={(e) => {
+            const names = e.target.value.split(',').map((name) => name.trim());
+            setVoteList(names);
+          }}
+        />
         <input
           type="number"
           placeholder="Duration days"
@@ -202,27 +232,33 @@ function Vot() {
         />
         <button onClick={voting}>Vote</button>
       </div>
-      <div>
-        <h4>List of votes</h4>
-        <ul>
-          {voteLists.map((vote, index) => (
-            <li key={index} onClick={() => getVoterAddress(vote)}>
-              <span>{vote}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        {selectedVoteName && displayedVoterAddress && (
-          <p>Voter address for "{selectedVoteName}": {displayedVoterAddress}</p>
-        )}
-      </div>
-      <div>
-        <div>
-          <h4>Voting Time</h4>
-          <p>Voting time duration: {timeDuration} days</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div className="bg-white shadow-md rounded-lg p-4">
+          <h4 className="text-lg font-bold mb-2">List of votes</h4>
+          <ul className="space-y-2">
+            {voteLists.map((vote, index) => (
+              <li
+                key={index}
+                onClick={() => getVoterAddress(vote)}
+                className="bg-gray-100 rounded-md p-2 cursor-pointer hover:bg-gray-200 transition-colors"
+              >
+                <span>{vote}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="bg-white shadow-md rounded-lg p-4">
+          <div>
+            <h4 className="text-lg font-bold mb-2">Voting Time</h4>
+            <p>Voting time duration: {timeDuration} days</p>
+          </div>
         </div>
       </div>
+      {selectedVoteName && displayedVoterAddress && (
+        <div className="bg-white shadow-md rounded-lg p-4 mt-4">
+          <p>Voter address for "{selectedVoteName}": {displayedVoterAddress}</p>
+        </div>
+      )}
     </div>
   );
 }
