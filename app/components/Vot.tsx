@@ -23,11 +23,9 @@ function Vot() {
   const [voteLists, setVoteLists] = useState<string[]>([]);
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
   const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
-  const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string | null>(null);
+  const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string[]>([]);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [votingList, setVotingList] = useState<string | null>(null);
-  const [displayVotedList, setDisplayVotedList] = useState<string[]>([]);
-  const [votedList, setVotedList] = useState<string[]>([]);
+  const [selectedVotedList, setSelectedVotedList] = useState<string[]>([]);
 
   useEffect(() => {
     async function initialize() {
@@ -84,7 +82,6 @@ function Vot() {
     console.log("voterAddress", voterAddress);
   }, [contract, setVoterAddress]);
 
-  useEffect(() => {
     const getVotingTime = async () => {
       if (contract) {
         try {
@@ -97,9 +94,6 @@ function Vot() {
         console.error("Contract is not initialized time.");
       }
     };
-
-    getVotingTime();
-  }, [contract]);
 
  const connectWallet = async () => {
   if (window.ethereum) {
@@ -173,17 +167,18 @@ function Vot() {
     }
   };
 
-  const getVotedList = async (voteList: string[]) => {
+  const getVotedList = async () => {
   if (contract) {
     try {
-      const list = await contract.getVotingList(voteList);
-      console.log("Retrieved votes:", list);
-      setVotedList(list);
+      const votedList = await contract.getVotedList(nameVotes);
+      console.log("Retrieved voted list:", votedList);
+      setSelectedVotedList(votedList);
+      setSelectedVoteName(nameVotes)
     } catch (error) {
-      console.error("Error retrieving voting list", error);
+      console.error("Error retrieving voted list:", error);
     }
   } else {
-    console.error("Contract List is not initialized");
+    console.error("Contract is not initialized got getVotedList");
   }
 };
 
@@ -201,91 +196,106 @@ function Vot() {
           Connect Wallet
         </button>
       )}
-      <h1 className="text-3xl mx-4 font-bold mb-4">Voting System</h1>
-      <div>
-        <input
-          type="text"
-          placeholder="Enter Vote Name"
-          value={nameVote}
-          onChange={(e) => setNameVote(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Voted Name list"
-          value={voteList.join(', ')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              const newName = e.target.value.trim();
-              if (newName !== '') {
-                setVoteList([...voteList, newName]);
-                e.target.value = '';
-              }
-            }
-          }}
-          onChange={(e) => {
-            const names = e.target.value.split(',').map((name) => name.trim());
-            setVoteList(names);
-          }}
-        />
-        <input
-          type="number"
-          placeholder="Duration days"
-          value={timeDuration}
-          onChange={(e) => setTimeDuration(Number(e.target.value))}
-        />
-        <button onClick={createVoteSystem}>Create Voting System</button>
-      </div>
-      <div>
-        <input
-          type="text"
-          placeholder="Enter Vote Name"
-          value={nameVotes}
-          onChange={(e) => setNameVotes(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Voted Name"
-          value={votedName}
-          onChange={(e) => setVotedName(e.target.value)}
-        />
-        <button onClick={voting}>Vote</button>
-      </div>
+     <h1 className="text-3xl mx-4 font-bold mb-4">Voting System</h1>
+<div className="space-y-4">
+  <div className="flex items-center space-x-4">
+    <input
+      className="border-gray-300 border rounded px-3 py-2 flex-1"
+      type="text"
+      placeholder="Enter Vote Name"
+      value={nameVote}
+      onChange={(e) => setNameVote(e.target.value)}
+    />
+    <input
+      className="border-gray-300 border rounded px-3 py-2 flex-1"
+      type="text"
+      placeholder="Voted Name list"
+      value={voteList.join(', ')}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          const newName = e.target.value.trim();
+          if (newName !== '') {
+            setVoteList([...voteList, newName]);
+            e.target.value = '';
+          }
+        }
+      }}
+      onChange={(e) => {
+        const names = e.target.value.split(',').map((name) => name.trim());
+        setVoteList(names);
+      }}
+    />
+    <input
+      className="border-gray-300 border rounded px-3 py-2 flex-1"
+      type="number"
+      placeholder="Duration days"
+      value={timeDuration}
+      onChange={(e) => setTimeDuration(Number(e.target.value))}
+    />
+    <button
+      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      onClick={createVoteSystem}
+    >
+      Create Voting System
+    </button>
+  </div>
+</div>
+<div className="space-y-4 mt-4">
+  <div className="flex items-center space-x-4">
+    <input
+      className="border-gray-300 border rounded px-3 py-2 flex-1"
+      type="text"
+      placeholder="Enter Vote Name"
+      value={nameVotes}
+      onChange={(e) => setNameVotes(e.target.value)}
+    />
+    <input
+      className="border-gray-300 border rounded px-3 py-2 flex-1"
+      type="text"
+      placeholder="Voted Name"
+      value={votedName}
+      onChange={(e) => setVotedName(e.target.value)}
+    />
+    <button
+      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      onClick={voting}
+    >
+      Vote
+    </button>
+  </div>
+</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div className="bg-white shadow-md rounded-lg p-4">
-          <h4 className="text-lg font-bold mb-2">List of votes</h4>
-          <ul className="space-y-2">
-            {voteLists.map((vote, index) => (
-              <li
-                key={index}
-                onClick={() => getVoterAddress(vote)}
-                className="bg-gray-100 rounded-md p-2 cursor-pointer hover:bg-gray-200 transition-colors"
-              >
-                <span>{vote}</span>
-              </li>
-            ))}
-          </ul>
-           {votedList.length > 0 && (
-  <div className="bg-white shadow-md rounded-lg p-4 mt-4">
-    <h4 className="text-lg font-bold mb-2">Voted List</h4>
-    <ul className="space-y-2">
-      {votedList.map((vote, index) => (
-        <li key={index} className="bg-gray-100 rounded-md p-2">
-          {vote}
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
+           <h4 className="text-lg font-bold mb-2">List of votes</h4>
+  <ul className="space-y-2">
+    {voteLists.map((vote, index) => (
+      <li
+        key={index}
+        onClick={() => getVoterAddress(vote)}
+        className="bg-gray-100 rounded-md p-2 cursor-pointer hover:bg-gray-200 transition-colors"
+      >
+        <span>{vote}</span>
+      </li>
+    ))}
+  </ul>
         </div>
-        <div className="bg-white shadow-md rounded-lg p-4">
+        <div className="bg-white shadow-md p-4">
           <div>
             <h4 className="text-lg font-bold mb-2">Voting Time</h4>
             <p>Voting time duration: {timeDuration} days</p>
           </div>
         </div>
       </div>
+      {selectedVoteName && (
+      <div>
+        <h4 className="text-lg font-bold mt-3">Voted List for "{selectedVoteName}: "</h4>
+        {selectedVotedList.map((vote, index) => (
+          <p key={index}>{vote}</p>
+        ))}
+      </div>
+    )}
       {selectedVoteName && displayedVoterAddress && (
-        <div className="bg-white shadow-md rounded-lg p-4 mt-4">
+        <div className="bg-white shadow-md p-2 mt-1">
           <p>Voter address for "{selectedVoteName}": {displayedVoterAddress}</p>
         </div>
       )}
