@@ -18,10 +18,9 @@ function Vot() {
   const [votedName, setVotedName] = useState<string>("");
   const [contract, setContract] = useState<ethers.Contract | undefined>(undefined);
   const [voteList, setVoteList] = useState<string[]>([]);
-  const [timeDuration, setTimeDuration] = useState<number>(0);
+  const [timeDuration, setTimeDuration] = useState<string | null>(null);
   const [nameVotes, setNameVotes] = useState<string>("");
   const [voteLists, setVoteLists] = useState<string[]>([]);
-  const [voterAddress, setVoterAddress] = useState<string[]>([]);
   const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
   const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string[]>([]);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -141,7 +140,17 @@ function Vot() {
         try {
           const time = await contract.getVotingTime(name);
           console.log(time, 'time')
-          setTimeDuration(time);
+          const votingDateString = time.toString();
+          const votingDate = new Date(Number(votingDateString) * 1000);
+         const timeDiff = votingDate.getTime() - new Date().getTime();
+         
+         const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24)); 
+         setTimeDuration(daysDiff.toString());
+           if (daysDiff <= 0) {
+        setTimeDuration(null);
+      } else {
+        setTimeDuration(daysDiff.toString());
+      }
         } catch (error) {
           console.error("Error retrieving voting timeDuration", error);
         }
@@ -213,7 +222,7 @@ function Vot() {
       type="number"
       placeholder="Duration days"
       value={timeDuration}
-      onChange={(e) => setTimeDuration(Number(e.target.value))}
+      onChange={(e) => setTimeDuration((e.target.value))}
     />
     <button
       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -265,7 +274,14 @@ function Vot() {
         <div className="bg-white shadow-md p-4">
           <div className="p-2 mt-1 mt-3 bg-white shadow-md mb-2">
             <h4 className="font-bold">Voting Time</h4>
-            <p >Voting time duration: {timeDuration.toString()} days</p>
+            {timeDuration !== null ? (
+        <p>
+          Voting time duration: {timeDuration} day
+          {timeDuration !== "0" ? 's' : ''}
+        </p>
+      ) : (
+        <p>Loading voting time...</p>
+      )}
           </div>
            {selectedVoteName && (
       <div className="mb-2">
@@ -276,7 +292,7 @@ function Vot() {
       </div>
     )}
           <div className="mb-2">
-            {selectedVoteName && displayedVoterAddress && (
+            {selectedVoteName && displayedVoterAddress &&(
         <div className="bg-white shadow-md">
           <p className="font-bold p-2 mt-1 ">Voter address for "{selectedVoteName}":</p> <p className="mx-1">{displayedVoterAddress}</p>
         </div>
