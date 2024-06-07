@@ -7,7 +7,7 @@ import { abi, contractAddress } from '../constants/voting';
 
 declare global {
   interface Window {
-    ethereum?: ethers.providers.ExternalProvider;
+    ethereum?: any;
   }
 }
 
@@ -246,10 +246,10 @@ function Vot() {
   return (
     <div className="container mx-auto my-1">
       {walletAddress ? (
-       <p className="text-lg font-bold mb-4 absolute mt-3 top-4 right-6 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-300">
-  Account: {walletAddress.slice(0, 4)}...
-  {walletAddress.slice(walletAddress.length - 4)}
-</p>
+        <p className="text-lg font-bold mb-4 absolute mt-3 top-4 right-6 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-300">
+          Account: {walletAddress.slice(0, 4)}...
+          {walletAddress.slice(walletAddress.length - 4)}
+        </p>
       ) : (
         <button
           onClick={connectWallet}
@@ -284,12 +284,12 @@ function Vot() {
             value={voteList.join(', ')}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                const newName = e.target.value.trim();
-                if (newName !== '') {
-                  setVoteList([...voteList, newName]);
-                  e.target.value = '';
-                }
-              }
+      const newName = (e.target as HTMLInputElement).value.trim();
+      if (newName !== '') {
+        setVoteList([...voteList, newName]);
+        (e.target as HTMLInputElement).value = '';
+      }
+    }
             }}
             onChange={(e) => {
               const names = e.target.value
@@ -298,13 +298,16 @@ function Vot() {
               setVoteList(names);
             }}
           />
-          <input
-            className="border-gray-300 border rounded px-3 py-2 flex-1"
-            type="number"
-            placeholder="Duration days"
-            value={timeDuration}
-            onChange={(e) => setTimeDuration(e.target.value)}
-          />
+         <input
+  className="border-gray-300 border rounded px-3 py-2 flex-1"
+  type="number"
+  placeholder="Duration days"
+  value={timeDuration ?? ''}
+  onChange={(e) => {
+    const value = e.target.value;
+    setTimeDuration(value ? value : null);
+  }}
+/>
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={createVoteSystem}
@@ -357,9 +360,9 @@ function Vot() {
             <h4 className="font-bold">Voting Time {timeDurationLeft}</h4>
             {!timeDurationLeft ? (
               <p>Loading voting time...</p>
-            ): timeDurationLeft > '0' ?(
+            ) : timeDurationLeft > '0' ? (
               <p>Voting time duration: {timeDurationLeft} days lefts</p>
-            )  : (
+            ) : (
               <p>Time is end</p>
             )}
           </div>

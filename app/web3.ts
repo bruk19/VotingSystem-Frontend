@@ -1,13 +1,13 @@
 import { ethers } from "ethers";
-
+import type { Provider, AbstractProvider, BrowserProvider } from "ethers";
 declare global {
   interface Window {
-    ethereum?: ethers.providers.ExternalProvider;
+    ethereum?: any;
   }
 }
 
-let web3: ethers.providers.Web3Provider | undefined;
-let provider: ethers.providers.Web3Provider | undefined;
+let web3: BrowserProvider;
+let provider: AbstractProvider ;
 
  export async function setupWeb3(): Promise<void> {
   let signer = null;
@@ -20,13 +20,13 @@ let provider: ethers.providers.Web3Provider | undefined;
     signer = await web3.getSigner();
 
     const networkId = (await web3.getNetwork()).chainId;
-    if (networkId != 11155111) {
+    if (Number(networkId) != 11155111) {
        window.alert("Please switch to Polygon Sepolia Testnet");
      }
     await window.ethereum.request({ method: "eth_requestAccounts" });
   }
 }
 
-export function getWeb3(): ethers.providers.Web3Provider | undefined {
+export function getWeb3(): BrowserProvider {
   return web3;
 }
