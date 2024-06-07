@@ -14,14 +14,18 @@ declare global {
 function Vot() {
   const [nameVote, setNameVote] = useState<string>('');
   const [votedName, setVotedName] = useState<string>('');
-  const [contract, setContract] = useState<ethers.Contract | undefined>(undefined);
+  const [contract, setContract] = useState<ethers.Contract | undefined>(
+    undefined
+  );
   const [voteList, setVoteList] = useState<string[]>([]);
   const [timeDuration, setTimeDuration] = useState<string | null>(null);
   const [timeDurationLeft, setTimeDurationLeft] = useState<string | null>(null);
   const [nameVotes, setNameVotes] = useState<string>('');
   const [voteLists, setVoteLists] = useState<string[]>([]);
   const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
-  const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string[]>([]);
+  const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string[]>(
+    []
+  );
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [selectedVotedList, setSelectedVotedList] = useState<string[]>([]);
   const [selectVotedValue, setSelectVotedValue] = useState<
@@ -105,20 +109,23 @@ function Vot() {
         setTimeDuration('');
       } catch (error) {
         console.error('Error creating voting system', error);
-       let errorMessage = 'An unknown error occurred.';
-      if (error instanceof Error) {
-        const errorString = error.toString();
-        const revertMessageMatch = errorString.match(/execution reverted: "(.*?)"/);
-        if (revertMessageMatch) {
-          errorMessage = revertMessageMatch[1];
+        let errorMessage = 'An unknown error occurred.';
+        if (error instanceof Error) {
+          const errorString = error.toString();
+          const revertMessageMatch = errorString.match(
+            /execution reverted: "(.*?)"/
+          );
+          if (revertMessageMatch) {
+            errorMessage = revertMessageMatch[1];
+          }
         }
+        setErrorMessage(errorMessage);
       }
-      setErrorMessage(errorMessage);
-    }
     } else {
-      const errorMessage = 'Contract is not initialized or MetaMask is not detected.';
-    console.error(errorMessage);
-    setErrorMessage(errorMessage);
+      const errorMessage =
+        'Contract is not initialized or MetaMask is not detected.';
+      console.error(errorMessage);
+      setErrorMessage(errorMessage);
     }
   };
 
@@ -143,7 +150,9 @@ function Vot() {
         let errorMessage = 'An unknown error occurred.';
         if (error instanceof Error) {
           const errorString = error.toString();
-          const revertMessageMatch = errorString.match(/execution reverted: "(.*?)"/);
+          const revertMessageMatch = errorString.match(
+            /execution reverted: "(.*?)"/
+          );
           if (revertMessageMatch) {
             errorMessage = revertMessageMatch[1];
           }
@@ -180,6 +189,7 @@ function Vot() {
         const timeDiff = votingDate.getTime() - new Date().getTime();
 
         const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
         setTimeDurationLeft(daysDiff.toString());
         if (daysDiff <= 0) {
           setTimeDurationLeft(null);
@@ -236,10 +246,10 @@ function Vot() {
   return (
     <div className="container mx-auto my-1">
       {walletAddress ? (
-        <p className="text-lg font-bold mb-4 absolute mt-3 top-4 right-6">
-          Account: {walletAddress.slice(0, 4)}...
-          {walletAddress.slice(walletAddress.length - 4)}
-        </p>
+       <p className="text-lg font-bold mb-4 absolute mt-3 top-4 right-6 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-300">
+  Account: {walletAddress.slice(0, 4)}...
+  {walletAddress.slice(walletAddress.length - 4)}
+</p>
       ) : (
         <button
           onClick={connectWallet}
@@ -251,11 +261,14 @@ function Vot() {
       <h1 className="text-3xl mx-4 font-bold my-5 mb-4">Voting System</h1>
       <div className="space-y-4">
         {errorMessage && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error:</strong>
-          <span className="block sm:inline">{errorMessage}</span>
-        </div>
-      )}
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline">{errorMessage}</span>
+          </div>
+        )}
         <div className="flex items-center space-x-4">
           <input
             className="border-gray-300 border rounded px-3 py-2 flex-1"
@@ -341,11 +354,13 @@ function Vot() {
         </div>
         <div className="bg-white shadow-md p-4">
           <div className="p-2 mt-1 mt-3 bg-white shadow-md mb-2">
-            <h4 className="font-bold">Voting Time</h4>
-            {timeDurationLeft !== null ? (
-              <p>Voting time duration: {timeDurationLeft} days lefts</p>
-            ) : (
+            <h4 className="font-bold">Voting Time {timeDurationLeft}</h4>
+            {!timeDurationLeft ? (
               <p>Loading voting time...</p>
+            ): timeDurationLeft > '0' ?(
+              <p>Voting time duration: {timeDurationLeft} days lefts</p>
+            )  : (
+              <p>Time is end</p>
             )}
           </div>
           <div className="mb-2">
