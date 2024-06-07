@@ -27,6 +27,7 @@ function Vot() {
   const [selectVotedValue, setSelectVotedValue] = useState<
     { voterName: string; voteCount: number }[]
   >([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function initialize() {
@@ -104,9 +105,20 @@ function Vot() {
         setTimeDuration('');
       } catch (error) {
         console.error('Error creating voting system', error);
+       let errorMessage = 'An unknown error occurred.';
+      if (error instanceof Error) {
+        const errorString = error.toString();
+        const revertMessageMatch = errorString.match(/execution reverted: "(.*?)"/);
+        if (revertMessageMatch) {
+          errorMessage = revertMessageMatch[1];
+        }
       }
+      setErrorMessage(errorMessage);
+    }
     } else {
-      console.error('Contract is not initialized or MetaMask is not detected.');
+      const errorMessage = 'Contract is not initialized or MetaMask is not detected.';
+    console.error(errorMessage);
+    setErrorMessage(errorMessage);
     }
   };
 
@@ -229,6 +241,12 @@ function Vot() {
       )}
       <h1 className="text-3xl mx-4 font-bold my-5 mb-4">Voting System</h1>
       <div className="space-y-4">
+        {errorMessage && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error:</strong>
+          <span className="block sm:inline">{errorMessage}</span>
+        </div>
+      )}
         <div className="flex items-center space-x-4">
           <input
             className="border-gray-300 border rounded px-3 py-2 flex-1"
