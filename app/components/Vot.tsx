@@ -140,6 +140,15 @@ function Vot() {
         setVotedName('');
       } catch (error) {
         console.error('Error Voting:', error);
+        let errorMessage = 'An unknown error occurred.';
+        if (error instanceof Error) {
+          const errorString = error.toString();
+          const revertMessageMatch = errorString.match(/execution reverted: "(.*?)"/);
+          if (revertMessageMatch) {
+            errorMessage = revertMessageMatch[1];
+          }
+        }
+        setErrorMessage(errorMessage);
       }
     }
   };
