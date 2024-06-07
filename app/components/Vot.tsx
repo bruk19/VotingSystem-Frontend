@@ -128,6 +128,9 @@ const getVoterAddress = async (voteName: string) => {
       setDisplayedVoterAddress(voterAddress);
       await getVotingTime(voteName);
       const votedList = await getVotedList(voteName);
+      const votedNames = votedList.map(String);
+      await getVoteValue(voteName, votedNames);
+      console.log(timeDuration, 'time after');
     } catch (error) {
       console.error("Error retrieving voter address:", error);
     }
