@@ -25,6 +25,9 @@ function Vot() {
   const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string[]>([]);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [selectedVotedList, setSelectedVotedList] = useState<string[]>([]);
+  const [selectVotedValue, setSelectVotedValue] = useState<
+  { voterName: string; voteCount: number }[]
+>([]);
 
   useEffect(() => {
     async function initialize() {
@@ -117,29 +120,26 @@ function Vot() {
     }
   };
 
-  const getVoterAddress = async (voteName: string) => {
-    if (contract) {
-      try {
-        const voterAddress = await contract.getVoterAddress(voteName);
-        console.log("Retrieved voter address:", voterAddress);
-        setSelectedVoteName(voteName);
-        setDisplayedVoterAddress(voterAddress);
-        await getVotingTime(voteName);
-        await getVotedList(voteName);
-        console.log(timeDuration, 'time after')
-      } catch (error) {
-        console.error("Error retrieving voter address:", error);
-      }
-    } else {
-      console.error("Contract is not initialized.");
+const getVoterAddress = async (voteName: string) => {
+  if (contract) {
+    try {
+      const voterAddress = await contract.getVoterAddress(voteName);
+      setSelectedVoteName(voteName);
+      setDisplayedVoterAddress(voterAddress);
+      await getVotingTime(voteName);
+      const votedList = await getVotedList(voteName);
+    } catch (error) {
+      console.error("Error retrieving voter address:", error);
     }
-  };
+  } else {
+    console.error("Contract is not initialized.");
+  }
+};
 
    const getVotingTime = async (name:string) => {
       if (contract) {
         try {
           const time = await contract.getVotingTime(name);
-          console.log(time, 'time')
           const votingDateString = time.toString();
           const votingDate = new Date(Number(votingDateString) * 1000);
          const timeDiff = votingDate.getTime() - new Date().getTime();
@@ -159,18 +159,42 @@ function Vot() {
       }
     };
 
-  const getVotedList = async (nameVotes:string) => {
+ const getVotedList = async (voteName: string) => {
   if (contract) {
     try {
-      const votedList = await contract.getVotedList(nameVotes);
-      console.log("Retrieved voted list:", votedList);
+      const votedList = await contract.getVotedList(voteName);
+      console.log("Voted list:", votedList);
       setSelectedVotedList(votedList);
-      setSelectedVoteName(nameVotes)
+      return votedList;
+    } catch (error) {
+      console.error("Error retrieving voted list:", error);
+      return [];
+    }
+  } else {
+    console.error("Contract is not initialized getVotedList");
+    return [];
+  }
+};
+
+const getVoteValue = async (voteName: string, votedNames: string[]) => {
+  if (contract) {
+    try {
+      const votedValues = await Promise.all(
+        votedNames.map(async (voter) => {
+          const votedAmount = await contract.getVoteValue(voteName, voter);
+          console.log("votedValue for", voter, "is", votedAmount);
+          return {
+            voterName: voter,
+            voteCount: Number(votedAmount),
+          };
+        })
+      );
+      setSelectVotedValue(votedValues);
     } catch (error) {
       console.error("Error retrieving voted list:", error);
     }
   } else {
-    console.error("Contract is not initialized got getVotedList");
+    console.error("Contract is not initialized getVotedValue");
   }
 };
 
@@ -276,21 +300,29 @@ function Vot() {
             <h4 className="font-bold">Voting Time</h4>
             {timeDuration !== null ? (
         <p>
-          Voting time duration: {timeDuration} day
-          {timeDuration !== "0" ? 's' : ''}
+          Voting time duration: {timeDuration} days lefts
         </p>
       ) : (
         <p>Loading voting time...</p>
       )}
           </div>
-           {selectedVoteName && (
-      <div className="mb-2">
-        <h4 className="font-bold p-2 mt-1 mt-3 bg-white shadow-md">Voted List for "{selectedVoteName}":</h4>
-        {selectedVotedList.map((vote, index) => (
-          <p key={index}>{vote}</p>
-        ))}
-      </div>
-    )}
+<div className="mb-2">
+  <h4 className="font-bold p-2 mt-1 mt-3 bg-white shadow-md">
+    Voted List for "{selectedVoteName}":
+  </h4>
+  {selectVotedValue.length > 0 ? (
+    <div>
+      {selectVotedValue.map((voter, index) => (
+        <div key={index} className="mt-3">
+          <p className="font-bold">Voter: {voter.voterName}</p>
+          <p>Voted Amount: {voter.voteCount}</p>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p>No votes found for the selected option.</p>
+  )}
+</div>
           <div className="mb-2">
             {selectedVoteName && displayedVoterAddress &&(
         <div className="bg-white shadow-md">
