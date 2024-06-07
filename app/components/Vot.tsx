@@ -339,22 +339,25 @@ function Vot() {
               <p>No votes found for the selected option.</p>
             )}
           </div>
-         <div className="mb-2">
-  {selectedVoteName && displayedVoterAddress && (
-    <div className="bg-white shadow-md">
-      <p className="font-bold p-2 mt-1">
-        Voter address for "{selectedVoteName}":
-      </p>
-      <div className="p-2">
-        {displayedVoterAddress.toString().split(',').map((line, index) => (
-          <p key={index} className={index > 0 ? 'mt-2' : ''}>
-            {line}
-          </p>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
+          <div className="mb-2">
+            {selectedVoteName && displayedVoterAddress && (
+              <div className="bg-white shadow-md">
+                <p className="font-bold p-2 mt-1">
+                  Voter address for "{selectedVoteName}":
+                </p>
+                <div className="p-2">
+                  {displayedVoterAddress
+                    .toString()
+                    .split(',')
+                    .map((line, index) => (
+                      <p key={index} className={index > 0 ? 'mt-2' : ''}>
+                        {line}
+                      </p>
+                    ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
