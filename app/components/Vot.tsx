@@ -99,6 +99,8 @@ function Vot() {
           receipt
         );
         window.alert('Voting System is created successfully.');
+        const updatedVoteNames = await contract.getVoteNames();
+        setVoteLists(updatedVoteNames);
 
         setNameVote('');
         setVoteList([]);
