@@ -14,17 +14,14 @@ declare global {
 function Vot() {
   const [nameVote, setNameVote] = useState<string>('');
   const [votedName, setVotedName] = useState<string>('');
-  const [contract, setContract] = useState<ethers.Contract | undefined>(
-    undefined
-  );
+  const [contract, setContract] = useState<ethers.Contract | undefined>(undefined);
   const [voteList, setVoteList] = useState<string[]>([]);
   const [timeDuration, setTimeDuration] = useState<string | null>(null);
+  const [timeDurationLeft, setTimeDurationLeft] = useState<string | null>(null);
   const [nameVotes, setNameVotes] = useState<string>('');
   const [voteLists, setVoteLists] = useState<string[]>([]);
   const [selectedVoteName, setSelectedVoteName] = useState<string | null>(null);
-  const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string[]>(
-    []
-  );
+  const [displayedVoterAddress, setDisplayedVoterAddress] = useState<string[]>([]);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [selectedVotedList, setSelectedVotedList] = useState<string[]>([]);
   const [selectVotedValue, setSelectVotedValue] = useState<
@@ -104,7 +101,7 @@ function Vot() {
 
         setNameVote('');
         setVoteList([]);
-        setTimeDuration(0);
+        setTimeDuration('');
       } catch (error) {
         console.error('Error creating voting system', error);
       }
@@ -162,11 +159,11 @@ function Vot() {
         const timeDiff = votingDate.getTime() - new Date().getTime();
 
         const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        setTimeDuration(daysDiff.toString());
+        setTimeDurationLeft(daysDiff.toString());
         if (daysDiff <= 0) {
-          setTimeDuration(null);
+          setTimeDurationLeft(null);
         } else {
-          setTimeDuration(daysDiff.toString());
+          setTimeDurationLeft(daysDiff.toString());
         }
       } catch (error) {
         console.error('Error retrieving voting timeDuration', error);
@@ -318,8 +315,8 @@ function Vot() {
         <div className="bg-white shadow-md p-4">
           <div className="p-2 mt-1 mt-3 bg-white shadow-md mb-2">
             <h4 className="font-bold">Voting Time</h4>
-            {timeDuration !== null ? (
-              <p>Voting time duration: {timeDuration} days lefts</p>
+            {timeDurationLeft !== null ? (
+              <p>Voting time duration: {timeDurationLeft} days lefts</p>
             ) : (
               <p>Loading voting time...</p>
             )}
