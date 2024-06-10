@@ -1,4 +1,3 @@
-// import Header from "./components/Header";
 import Vot from "./components/Vot";
 
 export default function Home() {
